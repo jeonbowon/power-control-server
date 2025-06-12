@@ -27,6 +27,9 @@ app.post('/status', (req, res) => {
 
   deviceStatus[deviceId] = { voltage, current, power, energy, timestamp, powerOn };
 
+  // ✅ 로그  
+  console.log(`[STATUS] ✅ ${new Date().toISOString()} | ${deviceId} | 전류: ${current}A`);
+
   return res.json({ result: 'ok' });
 });
 
