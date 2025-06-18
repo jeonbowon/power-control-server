@@ -29,7 +29,8 @@ app.post('/status', (req, res) => {
   deviceStatus[deviceId] = { current, ...relayData, timestamp: Date.now() };
 
   // 로그  
-  console.log(`[STATUS] ✅ ${new Date().toISOString()} | ${deviceId} | 전류: ${current}A`);
+  console.log(`[STATUS] ✅ ${new Date().toISOString()} | ${deviceId} → 전류: ${current}A`);
+  console.log(`[STATUS] 상세데이터: ${JSON.stringify(relayData)}`);
 
   return res.json({ result: 'ok' });
 });
@@ -39,6 +40,9 @@ app.get('/status/:deviceId', (req, res) => {
   const { deviceId } = req.params;
   const status = deviceStatus[deviceId];
   if (!status) return res.status(404).json({ error: 'Device not found' });
+
+  console.log(`[STATUS-GET] 📲 앱에서 ${deviceId} 상태 조회`);
+
   return res.json(status);
 });
 
@@ -49,6 +53,9 @@ app.post('/command', (req, res) => {
     return res.status(400).json({ error: 'Missing fields' });
   }
   commandQueue[deviceId] = { command, relay };
+
+  console.log(`[COMMAND] 📥 ${new Date().toISOString()} | 앱 → ${deviceId} | relay: ${relay} | 명령: ${command}`);
+
   return res.json({ result: 'queued' });
 });
 
@@ -60,8 +67,12 @@ app.get('/command', (req, res) => {
   const command = commandQueue[deviceId];
   if (command) {
     delete commandQueue[deviceId];	// 명령 한 번만 전송 → 삭제
+
+    console.log(`[COMMAND] 📤 ${new Date().toISOString()} | ${deviceId} → ESP32 수신 | relay: ${command.relay} | 명령: ${command.command}`);
+    
     return res.json(command);
   } else {
+    console.log(`[COMMAND] ⏳ ${new Date().toISOString()} | ${deviceId} → 대기 중 (보낼 명령 없음)`);
     return res.json({});
   }
 });
@@ -73,8 +84,10 @@ app.get('/config', (req, res) => {
 
   const config = deviceConfig[deviceId];
   if (config) {
+    console.log(`[CONFIG] 🔧 ${new Date().toISOString()} | ${deviceId} → ESP32 설정값 전송: ${JSON.stringify(config)}`);
     return res.json(config);
   } else {
+    console.log(`[CONFIG] ❌ ${new Date().toISOString()} | ${deviceId} 설정값 없음`);
     return res.json({});
   }
 });
@@ -86,6 +99,8 @@ app.post('/config', (req, res) => {
     return res.status(400).json({ error: 'Invalid config' });
   }
   deviceConfig[deviceId] = config;
+
+  console.log(`[CONFIG] 💾 ${new Date().toISOString()} | ${deviceId} → 앱 설정 저장: ${JSON.stringify(config)}`);
   return res.json({ result: 'saved' });
 });
 
