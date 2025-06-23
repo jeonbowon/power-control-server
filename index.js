@@ -5,6 +5,9 @@ const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');  // ✅ JWT 사용 추가
 dotenv.config();
 
+const LOGIN_ID = process.env.LOGIN_ID;
+const LOGIN_PW = process.env.LOGIN_PW;
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.JWT_SECRET || 'tnbsoft_secret'; // ✅ 토큰 서명용 키 (환경변수 또는 기본값)
@@ -37,12 +40,11 @@ app.get('/', (req, res) => {
   res.send('Power Control Server is running');
 });
 
-// ✅ [추가] 로그인 API - JWT 발급
+// ✅ 로그인 API - JWT 발급
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // ⚠ 실제 환경에서는 DB와 bcrypt로 검증해야 함
-  if (username === 'admin' && password === 'tnbsoft123') {
+  if (username === LOGIN_ID && password === LOGIN_PW) {
     const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
     console.log(`[LOGIN] ✅ ${username} 로그인 성공`);
     return res.json({ token });
@@ -51,6 +53,7 @@ app.post('/login', (req, res) => {
     return res.status(401).json({ error: '아이디 또는 비밀번호 오류' });
   }
 });
+
 
 // ✅ 1. 상태 업로드 (ESP32 → 서버) → 인증 불필요
 app.post('/status', (req, res) => {
