@@ -29,7 +29,14 @@ function verifyToken(req, res, next) {
   if (!token) return res.status(401).json({ error: '토큰 없음' });
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).json({ error: '토큰 유효하지 않음' });
+    if (err) {
+	if (err.name === 'TokenExpiredError') {
+          console.log('❌ [AUTH] 만료된 토큰');
+          return res.status(401).json({ error: '토큰 만료됨' });  // ✅ 앱에서 로그아웃 트리거
+        }
+        console.log('❌ [AUTH] 유효하지 않은 토큰:', err.message);
+	return res.status(403).json({ error: '토큰 유효하지 않음' });
+    }
     req.user = user;
     next();
   });
