@@ -52,7 +52,7 @@ app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
   if (username === LOGIN_ID && password === LOGIN_PW) {
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });	//'30s' });
+    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '30m' });	//'1h' });	//'30s' });
     console.log(`[LOGIN] ✅ ${username} 로그인 성공`);
     return res.json({ token });
   } else {
